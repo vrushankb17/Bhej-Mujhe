@@ -80,8 +80,13 @@ export const useWebRTC = () => {
         setupConnection(conn);
       });
 
-      peer.on("error", (err) => {
+      peer.on("error", (err: any) => {
         console.error("Peer error:", err);
+        // Ignore non-fatal WebRTC errors (like individual ICE server failures)
+        if (err.type === 'webrtc') {
+          console.log("Ignored non-fatal webrtc error");
+          return;
+        }
         setStatus("error");
       });
 
