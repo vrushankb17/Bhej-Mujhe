@@ -87,6 +87,11 @@ export const useWebRTC = () => {
           console.log("Ignored non-fatal webrtc error");
           return;
         }
+        // If we already have a working connection, ignore signaling errors (e.g., network dropping after connection)
+        if (connRef.current && connRef.current.open) {
+          console.log("Ignored peer error because data connection is already open");
+          return;
+        }
         setStatus("error");
       });
 
@@ -113,9 +118,21 @@ export const useWebRTC = () => {
       receiveBufferRef.current = [];
       receivedSizeRef.current = 0;
       fileMetaRef.current = null;
+      // Workaround for PeerJS: send a handshake ping immediately to ensure the other side 
+      // realizes the channel is open, in case the 'open' event fails to fire.
+      setTimeout(() => {
+        try { conn.send({ type: "handshake" }); } catch (e) {}
+      }, 500);
     });
 
     conn.on("data", (data: any) => {
+      // If we receive data, the channel MUST be open, even if the 'open' event was missed!
+      setStatus(prev => (prev === "connecting" || prev === "error") ? "connected" : prev);
+
+      if (data.type === "handshake") {
+        return;
+      }
+
       if (data.type === "meta") {
         fileMetaRef.current = data.meta;
         receiveBufferRef.current = [];
@@ -148,8 +165,12 @@ export const useWebRTC = () => {
       setStatus("disconnected");
     });
     
-    conn.on("error", () => {
-      setStatus("error");
+    conn.on("error", (err: any) => {
+      console.error("Connection error:", err);
+      // Only set error if connection isn't cleanly open
+      if (!conn.open) {
+        setStatus("error");
+      }
     });
   }, []);
 
