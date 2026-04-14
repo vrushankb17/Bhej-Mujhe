@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bhej Mujhe (SendMe) - High-Speed P2P File Transfer
 
-## Getting Started
+**Bhej Mujhe** is a state-of-the-art web application designed to transfer files of absolutely any size directly from one device to another at maximum network speeds. By utilizing pure WebRTC Data Channels, files never touch a centralized server, granting infinite file size caps, heightened privacy, and lightning-fast speeds.
 
-First, run the development server:
+## 🛠 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Framework**: [Next.js (App Router)](https://nextjs.org/) & React
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) (Custom Dark Mode Aesthetics & Glassmorphism)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/) (Dynamic SVG Rendering & Pop Animations)
+- **P2P Networking**: [PeerJS](https://peerjs.com/) (WebRTC Abstraction Layer)
+- **Deployment & Analytics**: [Vercel](https://vercel.com/) + `@vercel/analytics`
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧠 Core Technical Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Peer-to-Peer Data Channels (WebRTC)
+Instead of standard HTTP requests where a file is uploaded to an AWS S3 bucket and then downloaded by the receiver, Bhej Mujhe establishes a direct `RTCDataChannel` UDP tunnel between the two browsers. The transfer bandwidth is solely limited by the Sender's upload speed and the Receiver's download speed.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Deep ICE Candidate & STUN Routing
+WebRTC usually struggles to connect over cellular hotspots or aggressive corporate Wi-Fi architectures due to complex NAT layers (Symmetric NAT). To force connection reliability (Hole Punching), the initialization logic aggressively relies on an array of `stun.l.google.com:19302` Google STUN servers to expose public IP endpoints seamlessly. 
 
-## Learn More
+### 3. Fast File Slicing (Memory Management)
+Browsers typically crash with "Out of Memory" errors if you try to load a 10GB 4K Video directly into RAM. To avoid this:
+- The application utilizes native JavaScript `FileReader`.
+- We read the file in strict **256KB Chunks** (`ArrayBuffer`).
+- The chunk is sequentially sent through the WebRTC data tunnel.
+- The Receiver buffers these chunk arrays and finally reconstructs a single `Blob` URL locally to trigger a direct-to-disk download.
 
-To learn more about Next.js, take a look at the following resources:
+### 4. OTP-Namespace Abstraction
+To make sharing seamless, the app creates rapid 6-Digit Codes instead of terrifying 16-character UUIDs. Because public PeerJS signaling servers (`0.peerjs.com`) handle thousands of users worldwide, 6-digit codes risk hijacking/collision. Bhej Mujhe encrypts your 6 digit code internally behind a unique namespace prefix (e.g., `<namespace>_192837`) before hitting the signal server.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 5. Custom Typography
+The application boasts a hybrid typographical logo, marrying Devanagari (Hindi) and Latin characters seamlessly (`भेhej मुjhe`), visually connected by a digitally injected Shirorekha (the upper text border line characteristic of Hindi script).
