@@ -25,13 +25,40 @@ export const useWebRTC = () => {
   const receivedSizeRef = useRef<number>(0);
   const fileMetaRef = useRef<FileMetadata | null>(null);
 
-  useEffect(() => {
-    // Only import PeerJS on client side
+  const initialize = useCallback((role: 'send' | 'receive') => {
     import("peerjs").then(({ default: Peer }) => {
-      const peer = new Peer();
+      if (peerRef.current) {
+        peerRef.current.destroy();
+      }
+
+      const peerConfig = {
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
+          ]
+        }
+      };
+
+      let peer: Peer;
+      
+      if (role === 'send') {
+        // Generate a fast 6-digit OTP code to avoid long UUIDs
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        // Prefix it secretly to avoid public server collision
+        peer = new Peer(`bhej-mujhe-${code}`, peerConfig);
+        setPeerId(code); // Only show the clean 6 digits to the user
+      } else {
+        peer = new Peer(peerConfig);
+      }
       
       peer.on("open", (id) => {
-        setPeerId(id);
+        if (role === 'receive') {
+          // Internal receiver ID, we don't display it.
+        }
       });
 
       peer.on("connection", (conn) => {
@@ -45,7 +72,9 @@ export const useWebRTC = () => {
 
       peerRef.current = peer;
     });
+  }, []);
 
+  useEffect(() => {
     return () => {
       if (peerRef.current) {
         peerRef.current.destroy();
@@ -106,7 +135,9 @@ export const useWebRTC = () => {
 
   const connectToPeer = useCallback((id: string) => {
     if (!peerRef.current) return;
-    const conn = peerRef.current.connect(id, { reliable: true });
+    // Prefix the input to match the hidden true ID
+    const fullId = `bhej-mujhe-${id.replace(/\s+/g, '')}`;
+    const conn = peerRef.current.connect(fullId, { reliable: true });
     setupConnection(conn);
   }, [setupConnection]);
 

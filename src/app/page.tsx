@@ -9,7 +9,7 @@ import { Copy, Check, Upload, Download, AlertCircle, RefreshCw, ChevronLeft, Sen
 type Role = "send" | "receive" | null;
 
 export default function Home() {
-  const { peerId, status, progress, receivedFile, connectToPeer, sendFile, resetTransfer, disconnect } = useWebRTC();
+  const { peerId, status, progress, receivedFile, connectToPeer, sendFile, resetTransfer, disconnect, initialize } = useWebRTC();
   const [role, setRole] = useState<Role>(null);
   const [partnerIdInput, setPartnerIdInput] = useState("");
   const [copied, setCopied] = useState(false);
@@ -78,7 +78,7 @@ export default function Home() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
                 <button
-                  onClick={() => setRole("send")}
+                  onClick={() => { setRole("send"); initialize("send"); }}
                   className="group relative flex flex-col items-center p-10 bg-card/40 hover:bg-card/80 border border-card-border hover:border-blue-500/50 rounded-3xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.15)] overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -90,7 +90,7 @@ export default function Home() {
                 </button>
 
                 <button
-                  onClick={() => setRole("receive")}
+                  onClick={() => { setRole("receive"); initialize("receive"); }}
                   className="group relative flex flex-col items-center p-10 bg-card/40 hover:bg-card/80 border border-card-border hover:border-emerald-500/50 rounded-3xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.15)] overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -130,7 +130,7 @@ export default function Home() {
                        <h2 className="text-2xl font-semibold mb-2 flex items-center gap-2">
                          <Send className="w-6 h-6 text-blue-500" /> Sending Device
                        </h2>
-                       <p className="text-neutral-400 text-sm mb-8">Share this 16-character connection code with the receiver.</p>
+                       <p className="text-neutral-400 text-sm mb-8">Share this 6-digit connection code with the receiver.</p>
                        
                        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-4 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
                           <span className="font-mono text-xl tracking-wider text-blue-300 truncate mr-4">
@@ -208,14 +208,14 @@ export default function Home() {
                        <h2 className="text-2xl font-semibold mb-2 flex items-center gap-2">
                          <Download className="w-6 h-6 text-emerald-500" /> Receiving Device
                        </h2>
-                       <p className="text-neutral-400 text-sm mb-8">Paste the 16-character connection code from the sender.</p>
+                       <p className="text-neutral-400 text-sm mb-8">Paste the 6-digit connection code from the sender.</p>
                        
                        <form onSubmit={handleConnect} className="flex flex-col gap-4 mb-4">
                         <input
                           type="text"
                           value={partnerIdInput}
                           onChange={(e) => setPartnerIdInput(e.target.value)}
-                          placeholder="e.g. 1a2b3c4d5e6f7g8h"
+                          placeholder="e.g. 192837"
                           disabled={status === 'connected' || status === 'connecting' || status === 'transferring' || status === 'completed'}
                           className="bg-neutral-900 border border-neutral-800 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl px-6 py-4 font-mono text-lg outline-none transition-all placeholder:text-neutral-600 disabled:opacity-50 text-emerald-300"
                         />
