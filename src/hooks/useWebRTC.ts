@@ -198,6 +198,7 @@ export const useWebRTC = () => {
     receivedFile,
     connectToPeer,
     sendFile,
+    initialize,
     resetTransfer: () => {
       setStatus(connRef.current ? "connected" : "disconnected");
       setProgress(0);
