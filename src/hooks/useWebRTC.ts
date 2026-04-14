@@ -76,22 +76,45 @@ export const useWebRTC = () => {
         }
       });
 
+      peer.on("disconnected", () => {
+        console.log("Disconnected from signaling server. Reconnecting...");
+        if (peerRef.current && !peerRef.current.destroyed) {
+          peerRef.current.reconnect();
+        }
+      });
+
       peer.on("connection", (conn) => {
         setupConnection(conn);
       });
 
       peer.on("error", (err: any) => {
-        console.error("Peer error:", err);
+        console.error("Peer error:", err.type, err);
         // Ignore non-fatal WebRTC errors (like individual ICE server failures)
         if (err.type === 'webrtc') {
-          console.log("Ignored non-fatal webrtc error");
           return;
         }
         // If we already have a working connection, ignore signaling errors (e.g., network dropping after connection)
         if (connRef.current && connRef.current.open) {
-          console.log("Ignored peer error because data connection is already open");
           return;
         }
+        
+        // Peer-unavailable means the receiver typed the wrong code, or sender isn't ready
+        if (err.type === 'peer-unavailable') {
+          setStatus("error");
+          return;
+        }
+
+        // For mobile/flaky 4G connections, ignore temporary signaling connection drops
+        if (err.type === 'network' || err.type === 'server-error') {
+           setTimeout(() => {
+             if (peerRef.current && !peerRef.current.destroyed && peerRef.current.disconnected) {
+                console.log("Attempting reconnect after network error...");
+                peerRef.current.reconnect();
+             }
+           }, 2000);
+           return;
+        }
+
         setStatus("error");
       });
 
