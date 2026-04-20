@@ -37,14 +37,14 @@ export default function Dropzone({ onFileSelect, disabled = false }: DropzonePro
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden bg-[#111111]/50 backdrop-blur-md group ${
+      className={`rounded-2xl p-12 flex flex-col items-center justify-center transition-all duration-500 relative overflow-hidden group ${
         isDragOver
-          ? "border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+          ? "bg-white/10 scale-[1.02]"
           : disabled
-          ? "border-neutral-800 opacity-50 cursor-not-allowed"
-          : "border-neutral-800 hover:border-neutral-600 hover:bg-[#1a1a1a]/50 cursor-pointer"
+          ? "bg-transparent border border-white/5 opacity-50 cursor-not-allowed"
+          : "bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.03] cursor-pointer"
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -57,15 +57,18 @@ export default function Dropzone({ onFileSelect, disabled = false }: DropzonePro
         disabled={disabled}
       />
       
-      <div className={`p-4 rounded-full mb-4 transition-colors duration-300 ${isDragOver ? "bg-blue-500/20" : "bg-neutral-800 group-hover:bg-neutral-700"}`}>
-        <UploadCloud className={`w-8 h-8 transition-colors duration-300 ${isDragOver ? "text-blue-400" : "text-neutral-400"}`} />
-      </div>
+      <motion.div 
+        animate={{ y: isDragOver ? -5 : 0 }}
+        className="mb-8 opacity-70"
+      >
+        <UploadCloud strokeWidth={1} className={`w-10 h-10 transition-colors duration-500 ${isDragOver ? "text-white" : "text-white/50"}`} />
+      </motion.div>
       
-      <h3 className="text-xl font-medium text-neutral-200 mb-2">
-        {isDragOver ? "Drop file now!" : "Click or drag file to this area"}
+      <h3 className={`text-xl font-light tracking-wide mb-3 transition-colors duration-500 ${isDragOver ? "text-white" : "text-white/70"}`}>
+        {isDragOver ? "Release to drop" : "Select or drop file"}
       </h3>
-      <p className="text-neutral-500 text-sm max-w-sm text-center">
-        Any file size. It'll be directly transferred peer-to-peer with maximum speeds and zero server storage.
+      <p className="text-white/30 text-xs font-mono tracking-widest uppercase text-center mt-2">
+        Direct P2P
       </p>
     </motion.div>
   );

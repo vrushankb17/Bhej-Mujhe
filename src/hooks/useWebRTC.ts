@@ -20,7 +20,6 @@ export const useWebRTC = () => {
   const peerRef = useRef<Peer | null>(null);
   const connRef = useRef<DataConnection | null>(null);
 
-  // File reception state
   const receiveBufferRef = useRef<ArrayBuffer[]>([]);
   const receivedSizeRef = useRef<number>(0);
   const fileMetaRef = useRef<FileMetadata | null>(null);
@@ -61,18 +60,16 @@ export const useWebRTC = () => {
       let peer: Peer;
       
       if (role === 'send') {
-        // Generate a fast 6-digit OTP code to avoid long UUIDs
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        // Prefix it secretly to avoid public server collision
         peer = new Peer(`bhej-mujhe-${code}`, peerConfig);
-        setPeerId(code); // Only show the clean 6 digits to the user
+        setPeerId(code); 
       } else {
         peer = new Peer(peerConfig);
       }
       
       peer.on("open", (id) => {
         if (role === 'receive') {
-          // Internal receiver ID, we don't display it.
+          // Internal receiver ID,  don't display it.
         }
       });
 
@@ -89,22 +86,18 @@ export const useWebRTC = () => {
 
       peer.on("error", (err: any) => {
         console.error("Peer error:", err.type, err);
-        // Ignore non-fatal WebRTC errors (like individual ICE server failures)
         if (err.type === 'webrtc') {
           return;
         }
-        // If we already have a working connection, ignore signaling errors (e.g., network dropping after connection)
         if (connRef.current && connRef.current.open) {
           return;
         }
         
-        // Peer-unavailable means the receiver typed the wrong code, or sender isn't ready
         if (err.type === 'peer-unavailable') {
           setStatus("error");
           return;
         }
 
-        // For mobile/flaky 4G connections, ignore temporary signaling connection drops
         if (err.type === 'network' || err.type === 'server-error') {
            setTimeout(() => {
              if (peerRef.current && !peerRef.current.destroyed && peerRef.current.disconnected) {
@@ -141,15 +134,12 @@ export const useWebRTC = () => {
       receiveBufferRef.current = [];
       receivedSizeRef.current = 0;
       fileMetaRef.current = null;
-      // Workaround for PeerJS: send a handshake ping immediately to ensure the other side 
-      // realizes the channel is open, in case the 'open' event fails to fire.
       setTimeout(() => {
         try { conn.send({ type: "handshake" }); } catch (e) {}
       }, 500);
     });
 
     conn.on("data", (data: any) => {
-      // If we receive data, the channel MUST be open, even if the 'open' event was missed!
       setStatus(prev => (prev === "connecting" || prev === "error") ? "connected" : prev);
 
       if (data.type === "handshake") {
@@ -190,7 +180,6 @@ export const useWebRTC = () => {
     
     conn.on("error", (err: any) => {
       console.error("Connection error:", err);
-      // Only set error if connection isn't cleanly open
       if (!conn.open) {
         setStatus("error");
       }

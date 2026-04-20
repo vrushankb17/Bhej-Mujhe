@@ -4,27 +4,27 @@ import { Send } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="flex justify-between items-center py-5 px-6 border-b border-white/5 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+    <header className="flex justify-between items-center py-8 px-6 bg-transparent w-full max-w-5xl mx-auto z-50">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-500/20 flex items-center justify-center rounded-xl border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-          <Send className="text-blue-400 w-5 h-5 -ml-1 mt-0.5" />
-        </div>
-        {/* Hybrid Hindi/English Logo typography */}
-        <div className="flex items-end select-none">
-          <div className="flex items-start">
-            <span className="text-3xl sm:text-4xl font-black text-white leading-none">भे</span>
-            <span className="text-2xl sm:text-3xl font-bold text-white leading-none border-t-[3px] sm:border-t-4 border-white pt-1 -ml-[1px] tracking-tight">hej</span>
+        {/* Minimalist Logo */}
+        <div className="flex items-end select-none cursor-default group">
+          <div className="flex items-start transition-opacity group-hover:opacity-80">
+            <span className="text-2xl sm:text-3xl font-medium text-white leading-none tracking-tight">भे</span>
+            <span className="text-lg sm:text-xl font-light text-white/50 leading-none pt-[5px] pl-1 tracking-[0.2em] uppercase">hej</span>
           </div>
-          <div className="flex items-start ml-2 sm:ml-3 relative">
-            <span className="text-3xl sm:text-4xl font-black text-white leading-none">मु</span>
-            <span className="text-2xl sm:text-3xl font-bold text-white leading-none border-t-[3px] sm:border-t-4 border-white pt-1 -ml-[1px] tracking-tight">jhe</span>
-            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#10b981] rounded-full absolute -right-4 bottom-1 shadow-[0_0_10px_rgba(16,185,129,0.8)]"></span>
+          <div className="flex items-start ml-3 sm:ml-4 relative transition-opacity group-hover:opacity-80">
+            <span className="text-2xl sm:text-3xl font-medium text-white leading-none tracking-tight">मु</span>
+            <span className="text-lg sm:text-xl font-light text-white/50 leading-none pt-[5px] pl-1 tracking-[0.2em] uppercase">jhe</span>
+            <span className="w-1 h-1 bg-white/30 rounded-full absolute -right-3 bottom-1.5 transition-colors group-hover:bg-white"></span>
           </div>
         </div>
       </div>
-      <div className="text-sm font-medium tracking-wide text-neutral-500 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-        Device Ready
+      <div className="text-xs font-mono tracking-widest text-white/30 uppercase flex items-center gap-2 select-none">
+        <div className="relative flex h-1.5 w-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/30 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white/40"></span>
+        </div>
+        Ready
       </div>
     </header>
   );
