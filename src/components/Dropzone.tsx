@@ -4,11 +4,11 @@ import { UploadCloud, File } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface DropzoneProps {
-  onFileSelect: (file: File) => void;
+  onFilesSelect: (files: File[]) => void;
   disabled?: boolean;
 }
 
-export default function Dropzone({ onFileSelect, disabled = false }: DropzoneProps) {
+export default function Dropzone({ onFilesSelect, disabled = false }: DropzoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -25,13 +25,13 @@ export default function Dropzone({ onFileSelect, disabled = false }: DropzonePro
     e.preventDefault();
     setIsDragOver(false);
     if (!disabled && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      onFileSelect(e.dataTransfer.files[0]);
+      onFilesSelect(Array.from(e.dataTransfer.files));
     }
-  }, [disabled, onFileSelect]);
+  }, [disabled, onFilesSelect]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      onFileSelect(e.target.files[0]);
+      onFilesSelect(Array.from(e.target.files));
     }
   };
 
@@ -52,6 +52,7 @@ export default function Dropzone({ onFileSelect, disabled = false }: DropzonePro
     >
       <input
         type="file"
+        multiple
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
         onChange={handleChange}
         disabled={disabled}
@@ -65,7 +66,7 @@ export default function Dropzone({ onFileSelect, disabled = false }: DropzonePro
       </motion.div>
       
       <h3 className={`text-xl font-light tracking-wide mb-3 transition-colors duration-500 ${isDragOver ? "text-white" : "text-white/70"}`}>
-        {isDragOver ? "Release to drop" : "Select or drop file"}
+        {isDragOver ? "Release to drop" : "Select or drop files"}
       </h3>
       <p className="text-white/30 text-xs font-mono tracking-widest uppercase text-center mt-2">
         Direct P2P

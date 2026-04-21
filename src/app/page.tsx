@@ -13,6 +13,36 @@ export default function Home() {
   const [role, setRole] = useState<Role>(null);
   const [partnerIdInput, setPartnerIdInput] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
+  const [zipProgress, setZipProgress] = useState(0);
+
+  const handleFilesSelect = async (files: File[]) => {
+    if (files.length === 1) {
+      sendFile(files[0]);
+    } else if (files.length > 1) {
+      setIsZipping(true);
+      setZipProgress(0);
+      try {
+        const JSZip = (await import("jszip")).default;
+        const zip = new JSZip();
+        files.forEach((file) => {
+          zip.file(file.name, file);
+        });
+        const blob = await zip.generateAsync(
+          { type: "blob", compression: "STORE" },
+          (metadata) => {
+            setZipProgress(Math.round(metadata.percent));
+          }
+        );
+        const zipFile = new File([blob], "bhej-mujhe-files.zip", { type: "application/zip" });
+        setIsZipping(false);
+        sendFile(zipFile);
+      } catch (err) {
+        console.error("Zipping error:", err);
+        setIsZipping(false);
+      }
+    }
+  };
 
   const handleCopy = () => {
     if (peerId) {
@@ -166,9 +196,11 @@ export default function Home() {
                         <TransferProgress progress={progress} role="send" />
                       ) : status === "completed" ? (
                         <CompletedComponent role="send" onReset={resetTransfer} />
+                      ) : isZipping ? (
+                        <ZippingProgress progress={zipProgress} />
                       ) : (
                         <motion.div key="dropzone" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full">
-                          <Dropzone onFileSelect={sendFile} disabled={false} />
+                          <Dropzone onFilesSelect={handleFilesSelect} disabled={false} />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -350,3 +382,39 @@ const ErrorComponent = ({ message, onRetry }: { message: string, onRetry: () => 
     </button>
   </motion.div>
 );
+
+const ZippingProgress = ({ progress }: { progress: number }) => (
+  <motion.div
+    key="zipping-ui"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className={`h-full flex flex-col items-center justify-center p-10 border border-white/[0.05] rounded-2xl bg-white/[0.02] relative overflow-hidden`}
+  >
+    <div className="z-10 relative flex flex-col items-center">
+      <div className="relative w-32 h-32 mb-8 flex items-center justify-center">
+          <svg className="w-full h-full transform -rotate-90 absolute inset-0" viewBox="0 0 100 100">
+             <circle cx="50" cy="50" r="48" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
+             <motion.circle 
+               cx="50" cy="50" r="48" 
+               fill="transparent" 
+               stroke="white" 
+               strokeWidth="1" 
+               strokeLinecap="round"
+               strokeDasharray="301.59"
+               initial={{ strokeDashoffset: 301.59 }}
+               animate={{ strokeDashoffset: 301.59 - (301.59 * progress) / 100 }}
+               transition={{ ease: "linear", duration: 0.2 }}
+             />
+          </svg>
+          <div className="text-2xl font-light text-white tracking-widest text-center">
+            {progress}%
+          </div>
+      </div>
+      
+      <h3 className="text-lg font-light mb-2 text-white/80">Archiving</h3>
+      <p className="text-white/30 text-xs uppercase tracking-widest font-mono">Preparing files</p>
+    </div>
+  </motion.div>
+);
+
